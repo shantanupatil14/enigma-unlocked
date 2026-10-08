@@ -1,0 +1,4 @@
+playwright
+imageio-ffmpeg
+edge-tts
+Pillow

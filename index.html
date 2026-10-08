@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Enigma Unlocked</title>
+  <meta name="description" content="Learn how the Enigma cipher machine works, then play with a working one.">
+  <meta name="theme-color" content="#120a05">
+  <!-- Link preview (WhatsApp, LinkedIn, etc.). These addresses assume the site is published at https://shantanupatil14.github.io/enigma-unlocked/ -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Enigma Unlocked">
+  <meta property="og:title" content="Enigma Unlocked: see how the Enigma machine works">
+  <meta property="og:description" content="A free, interactive 3D Enigma machine with a short story, seven plain-English lessons and messages to decode.">
+  <meta property="og:url" content="https://shantanupatil14.github.io/enigma-unlocked/">
+  <meta property="og:image" content="https://shantanupatil14.github.io/enigma-unlocked/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <style>
+    /* ---------- Colours and basics (vintage brass and wood) ---------- */
+    :root {
+      --wood-dark: #0f0905;
+      --wood: #1c1109;
+      --wood-light: #2b190d;
+      --brass: #c9a24d;
+      --brass-dark: #7d5f26;
+      --cream: #efe6cf;
+      --ink: #231a10;
+      --amber: #ffb830;
+      --text: #f2e8d0;
+      --muted: #bfae8a;
+      --key: min(44px, 8.2vw);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; color: var(--text); background: var(--wood-dark);
+      background-image: repeating-linear-gradient(90deg, rgba(255,255,255,.015) 0 2px, transparent 2px 7px);
+      font-family: Georgia, "Times New Roman", serif; line-height: 1.5;
+    }
+    h1, h2, h3 { font-weight: normal; letter-spacing: .04em; margin: 0 0 .5rem; }
+    button, select, textarea { font: inherit; color: inherit; }
+    button { cursor: pointer; }
+    :focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
+
+    /* ---------- Header and tabs ---------- */
+    .top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem 1.5rem;
+           padding: .8rem 16px; background: #120a05; border-bottom: 2px solid var(--brass-dark); }
+    .brand { font-size: 1.4rem; color: var(--brass); letter-spacing: .12em; text-transform: uppercase; }
+    nav { display: flex; flex-wrap: wrap; gap: .3rem; }
+    nav button { background: none; border: 1px solid transparent; padding: .35rem .8rem; border-radius: 4px; color: var(--muted); }
+    nav button[aria-current="page"] { color: var(--brass); border-color: var(--brass-dark); background: rgba(201,162,77,.08); }
+    nav button:hover { color: var(--text); }
+    main { max-width: 980px; margin: 0 auto; padding: 1rem 16px 3rem; }
+    .placeholder { color: var(--muted); padding: 2rem 0; }
+
+    /* ---------- Machine body ---------- */
+    .machine { background: linear-gradient(180deg, var(--wood-light), var(--wood)); border: 3px solid var(--brass-dark);
+               border-radius: 12px; padding: 14px; box-shadow: 0 10px 30px rgba(0,0,0,.6), inset 0 0 0 2px rgba(255,255,255,.05); }
+    .panel { background: rgba(0,0,0,.42); border: 1px solid var(--brass-dark); border-radius: 8px; padding: 12px; margin-bottom: 14px; }
+    .panel h3 { color: var(--brass); font-size: 1rem; text-transform: uppercase; }
+    .hint { color: var(--muted); font-size: .9rem; margin: 0 0 .6rem; }
+
+    .modebar { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; margin-bottom: 10px; }
+    .seg button { background: #170d06; border: 1px solid var(--brass-dark); padding: .3rem .8rem; }
+    .seg button:first-child { border-radius: 5px 0 0 5px; } .seg button:last-child { border-radius: 0 5px 5px 0; }
+    .seg button[aria-pressed="true"] { background: var(--brass); color: var(--ink); }
+
+    /* Rotor settings */
+    .rotor-settings { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .rs { background: rgba(0,0,0,.25); border: 1px solid var(--brass-dark); border-radius: 6px; padding: 8px; }
+    .rs b { display: block; color: var(--brass); font-weight: normal; margin-bottom: 4px; }
+    .rs label { display: flex; justify-content: space-between; align-items: center; gap: 6px; font-size: .88rem; margin: 3px 0; color: var(--muted); }
+    select { background: #170d06; border: 1px solid var(--brass-dark); border-radius: 4px; padding: 2px 4px; color: var(--text); }
+    .full-only { display: none !important; }
+    body.full .full-only { display: flex !important; }
+    body.full .full-only-block { display: block !important; }
+    .full-only-block { display: none; }
+
+    /* Rotor windows */
+    .windows { display: flex; justify-content: center; gap: 14px; }
+    .win-wrap { text-align: center; font-size: .8rem; color: var(--muted); }
+    .win { width: 62px; height: 84px; margin: 0 auto 4px; display: grid; place-items: center; background: linear-gradient(#050302, #1d1710 45%, #050302);
+           border: 5px solid var(--brass-dark); border-radius: 8px; color: #f3e3b0; font: 700 44px Georgia, serif;
+           box-shadow: inset 0 6px 10px rgba(0,0,0,.8), inset 0 -6px 10px rgba(0,0,0,.7), 0 2px 5px rgba(0,0,0,.7); }
+    .win.tick span { animation: tick .25s ease-out; }
+    @keyframes tick { from { transform: translateY(-16px); opacity: .2; } to { transform: none; opacity: 1; } }
+
+    /* Lamps and keys */
+    .rows { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .row { display: flex; gap: 5px; }
+    .lamp, .keycap, .plug { width: var(--key); height: var(--key); border-radius: 50%; display: grid; place-items: center;
+           font: 700 clamp(.8rem, 3.4vw, 1.1rem) Georgia, serif; padding: 0; }
+    .lamp { background: radial-gradient(circle at 40% 35%, #4a3f2c, #14100a 70%); color: #7a6a4a; border: 2px solid var(--brass-dark); transition: box-shadow .15s; }
+    .lamp.lit { background: radial-gradient(circle at 40% 35%, #fff6c2, var(--amber) 60%, #b86a00); color: #2a1700; border-color: #ffe08a;
+                box-shadow: 0 0 18px 6px rgba(255,184,48,.7); }
+    .keycap { background: radial-gradient(circle at 40% 30%, #3b352c, #17130e 70%); color: var(--cream); border: 3px solid var(--brass-dark);
+              box-shadow: 0 3px 0 #000, 0 4px 6px rgba(0,0,0,.6); }
+    .keycap:active, .keycap.down { transform: translateY(3px); box-shadow: 0 0 0 #000; background: #0b0906; color: var(--amber); }
+
+    /* Plugboard */
+    .plug { background: #0e0904; color: var(--muted); border: 3px solid #5a4620; position: relative; }
+    .plug.pending { border-color: var(--amber); color: var(--amber); }
+    .plug.paired { color: #111; border-color: transparent; }
+    .plug small { position: absolute; bottom: -4px; right: -2px; font-size: .62rem; background: #000a; padding: 0 3px; border-radius: 4px; color: #fff; }
+    .pairs { color: var(--muted); font-size: .92rem; margin-top: .6rem; min-height: 1.4em; }
+    .counter { margin-top: .5rem; padding: .5rem .7rem; border-left: 4px solid var(--brass); background: rgba(201,162,77,.08); }
+    .counter strong { color: var(--amber); font-size: 1.15rem; }
+
+    /* Message */
+    textarea { width: 100%; min-height: 90px; background: #130d07; color: var(--text); border: 3px solid var(--brass-dark); border-radius: 6px; padding: 8px 10px;
+               font: 1.05rem "Courier New", monospace; resize: vertical; }
+    textarea::placeholder { color: #7d6c4c; }
+    .tape { min-height: 90px; background: #130d07; color: var(--amber); border: 3px dashed var(--brass-dark); border-radius: 4px; padding: 8px 10px;
+            font: 700 1.1rem "Courier New", monospace; letter-spacing: .12em; word-break: break-all; white-space: pre-wrap; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 640px) {
+      .grid2 { grid-template-columns: 1fr; } .rotor-settings { gap: 6px; } .rs { padding: 5px; } .rs label { font-size: .78rem; }
+      /* Phone: slimmer padding so a row of 10 keys fits inside its panel */
+      :root { --key: min(44px, calc((100vw - 92px) / 10)); }
+      main { padding-left: 10px; padding-right: 10px; }
+      .machine { padding: 8px; } .panel { padding: 8px; } .row { gap: 3px; }
+    }
+    .tools { display: flex; flex-wrap: wrap; gap: .5rem 1rem; align-items: center; margin-top: .5rem; font-size: .92rem; color: var(--muted); }
+    .btn { background: #170d06; border: 1px solid var(--brass); color: var(--brass); padding: .3rem .8rem; border-radius: 5px; }
+    .btn:hover { background: var(--brass); color: var(--ink); }
+
+    /* Signal path */
+    .chain { display: flex; flex-wrap: wrap; gap: 6px; align-items: stretch; }
+    .card { flex: 1 1 74px; max-width: 110px; background: #170d06; border: 1px solid var(--brass-dark); border-radius: 6px; padding: 6px 4px; text-align: center; opacity: .45; transition: opacity .2s, box-shadow .2s; }
+    .card small { display: block; font-size: .68rem; color: var(--muted); line-height: 1.15; min-height: 2.3em; }
+    .card b { font-size: 1.6rem; color: var(--cream); }
+    .card.on { opacity: 1; }
+    .card.now { border-color: var(--amber); box-shadow: 0 0 10px rgba(255,184,48,.6); }
+    .card.now b { color: var(--amber); }
+    .caption { margin-top: .6rem; min-height: 3em; padding: .5rem .7rem; background: rgba(0,0,0,.3); border-radius: 6px; }
+    .sr { position: absolute; left: -9999px; }
+
+    /* View switch and the 3D stage */
+    .viewbar { display: flex; flex-wrap: wrap; gap: .6rem 1rem; align-items: center; margin-bottom: 12px; }
+    .viewbar .seg button { padding: .45rem 1.1rem; font-size: 1.05rem; } .viewbar small { opacity: .7; }
+    .setup-row { display: flex; flex-wrap: wrap; gap: .6rem 1.2rem; align-items: center; margin-top: 10px; }
+    .setup-row label { display: flex; gap: 8px; align-items: center; color: var(--muted); font-size: .92rem; }
+    input[type="text"] { background: #130d07; color: var(--text); border: 2px solid var(--brass-dark); border-radius: 5px; padding: .35rem .6rem; font: 1rem "Courier New", monospace; }
+    input[type="text"]::placeholder { color: #7d6c4c; }
+    .msgbar { display: flex; flex-wrap: wrap; gap: .6rem; margin-bottom: .6rem; }
+    .msgbar input { flex: 1 1 260px; font-size: 1.25rem; letter-spacing: .12em; text-transform: uppercase; padding: .5rem .8rem; }
+    .btn.big { font-size: 1.15rem; padding: .45rem 1.3rem; background: var(--brass); color: var(--ink); font-weight: bold; }
+    .btn:disabled { opacity: .4; cursor: default; } .btn:disabled:hover { background: #170d06; color: var(--brass); }
+    .btn[aria-pressed="true"] { background: var(--brass); color: var(--ink); }
+    .tape2 { margin-top: .7rem; display: grid; gap: 4px; font: 700 1.3rem "Courier New", monospace; letter-spacing: .12em; }
+    .tape2 .tr { display: flex; flex-wrap: wrap; gap: 3px; align-items: center; }
+    .tape2 .lab { font: .75rem Georgia, serif; letter-spacing: 0; color: var(--muted); width: 3.2rem; }
+    .tape2 .ch { width: 1.7rem; height: 2rem; display: grid; place-items: center; border-radius: 4px; background: #130d07; color: var(--cream); border: 1px solid var(--brass-dark); }
+    .tape2 .ch.now { border-color: var(--amber); color: var(--amber); box-shadow: 0 0 8px rgba(255,184,48,.6); }
+    .tape2 .ch.todo { opacity: .35; }
+    .tape2 .out { color: var(--amber); }
+    .dialrow { display: flex; justify-content: center; margin-bottom: 8px; }
+    #in-wins .win { width: 48px; height: 62px; font-size: 32px; border-width: 4px; }
+    #in-wins { margin-bottom: 10px; }
+    .badge { font-size: .7rem; color: var(--amber); border: 1px solid var(--amber); border-radius: 10px; padding: 0 .5rem; margin-left: .4rem; letter-spacing: 0; text-transform: none; }
+    .stage { position: relative; aspect-ratio: 16 / 9; width: 100%; border-radius: 8px; overflow: hidden; border: 1px solid var(--brass-dark);
+             background: radial-gradient(ellipse at 50% 42%, #3d2512 0%, #1a0f07 55%, #080402 100%); }
+    .stage canvas { width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
+    .stage-ui { position: absolute; left: 8px; right: 8px; top: 8px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .stage-ui .btn { padding: .2rem .6rem; font-size: .85rem; background: rgba(10,6,3,.75); }
+    .stage-ui .btn[aria-pressed="true"] { background: var(--brass); color: var(--ink); }
+    .speed { margin-left: auto; font-size: .85rem; color: var(--muted); background: rgba(10,6,3,.75); padding: .15rem .5rem; border-radius: 5px; }
+    .tag { position: absolute; left: 0; top: 0; pointer-events: none; font-size: .78rem; color: var(--cream); background: rgba(10,6,3,.8); border: 1px solid var(--brass-dark); border-radius: 10px; padding: 0 .55rem; white-space: nowrap; }
+    .tag.off { display: none; }
+    .chip { position: absolute; top: 8px; left: 8px; font-size: .85rem; color: var(--cream); background: rgba(10,6,3,.75); border: 1px solid var(--brass-dark); border-radius: 12px; padding: .1rem .7rem; }
+    /* Scene player and sketch characters */
+    .pl { max-width: 900px; outline: none; }
+    .pl-stage { position: relative; aspect-ratio: 16 / 9; width: 100%; border: 3px solid var(--brass-dark); border-radius: 10px; overflow: hidden; background: #e8dbb8; box-shadow: 0 6px 24px rgba(0,0,0,.5); }
+    .pl-stage svg { width: 100%; height: 100%; display: block; transition: opacity .22s; }
+    .pl-stage svg.fading { opacity: 0; }
+    .pl-bubble { position: absolute; top: 4%; transform: translateX(-50%); max-width: 50%; background: #fffaf0; color: #2a1d12; border: 2.5px solid #2a1d12; border-radius: 16px; padding: .5rem .8rem; font: italic clamp(.78rem, 2.1vw, 1.08rem)/1.35 Georgia, serif; transition: left .5s ease; box-shadow: 3px 3px 0 rgba(42,29,18,.35); }
+    .pl-bubble::after { content: ""; position: absolute; left: 50%; bottom: -13px; width: 18px; height: 18px; background: #fffaf0; border-right: 2.5px solid #2a1d12; border-bottom: 2.5px solid #2a1d12; transform: translateX(-50%) rotate(45deg); }
+    .pl-caption { position: absolute; left: 4%; right: 4%; bottom: 4%; background: rgba(255,250,240,.93); color: #2a1d12; border: 2px solid #2a1d12; border-radius: 6px; padding: .5rem .9rem; text-align: center; font: italic clamp(.8rem, 2.2vw, 1.12rem)/1.4 Georgia, serif; }
+    .pl-controls { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin-top: .6rem; }
+    .pl-dots { display: flex; gap: 6px; margin-left: .4rem; flex-wrap: wrap; }
+    .pl-dots .dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--brass-dark); background: transparent; padding: 0; }
+    .pl-dots .dot.on { background: var(--brass); }
+    .pl-count { color: var(--muted); font-size: .85rem; margin-left: auto; }
+    .pl-cta { margin-top: .8rem; }
+    /* characters: still figures. The expression is just a CSS class; nothing moves except a gentle fade. */
+    .char { transition: opacity .3s; }
+    .char.hidden { opacity: 0; pointer-events: none; }
+    .look-r .pupil { transform: translateX(2px); } .look-l .pupil { transform: translateX(-2px); }
+    /* faces: every shape is drawn; the mood decides which eyes, brows and mouth are visible */
+    .char .v { display: none; }
+    .char .e-open, .char .b-flat, .char .m-smile { display: inline; }
+    .mood-happy .e-open, .mood-happy .b-flat, .mood-happy .m-smile,
+    .mood-surprised .e-open, .mood-surprised .b-flat, .mood-surprised .m-smile,
+    .mood-worried .b-flat, .mood-worried .m-smile,
+    .mood-thinking .b-flat, .mood-thinking .m-smile,
+    .mood-curious .b-flat, .mood-curious .m-smile,
+    .mood-proud .e-open, .mood-proud .m-smile { display: none; }
+    .mood-happy .e-happy, .mood-happy .b-up, .mood-happy .m-grin { display: inline; }
+    .mood-surprised .e-wide, .mood-surprised .b-up, .mood-surprised .m-o { display: inline; }
+    .mood-worried .b-worried, .mood-worried .m-frown { display: inline; }
+    .mood-thinking .b-curious, .mood-thinking .m-flat { display: inline; }
+    .mood-curious .b-curious, .mood-curious .m-smirk { display: inline; }
+    .mood-proud .e-squint, .mood-proud .m-smirk { display: inline; }
+    /* scene effects: shown or hidden, not animated */
+    .fx, .signal { opacity: 0; transition: opacity .3s; }
+    svg.on-bars .fx-bars, svg.on-swap .fx-swap, svg.on-question .fx-question { opacity: 1; }
+    svg.on-signal .signal { opacity: 1; }
+    svg.on-lamp .lamp-main { fill: #ffb830; filter: drop-shadow(0 0 5px #ffb830); }    @media (max-width: 640px) { .pl-bubble { max-width: 70%; top: 2%; } }
+    /* Learn tab */
+    .learnnav { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 14px; }
+    .lp { background: #170d06; border: 1px solid var(--brass-dark); color: var(--muted); border-radius: 16px; padding: .25rem .8rem; font-size: .9rem; }
+    .lp.on { background: var(--brass); color: var(--ink); border-color: var(--brass); }
+    .chapter { max-width: 900px; } .chapter h3 { color: var(--cream); font-size: 1.45rem; margin: .2rem 0 .8rem; }
+    .chapter h4 { color: var(--brass); text-transform: uppercase; letter-spacing: .08em; font-size: .85rem; margin: 1.1rem 0 .3rem; }
+    .analogy { margin: .9rem 0 0; } .ideas { margin: .2rem 0; padding-left: 1.3rem; } .ideas li { margin: .35rem 0; }
+    .t2 { border-collapse: collapse; margin: .5rem 0; font-family: "Courier New", monospace; } .t2 th, .t2 td { border: 1px solid var(--brass-dark); padding: .25rem .8rem; text-align: center; } .t2 th { color: var(--brass); text-align: left; }
+    .nerd { background: rgba(0,0,0,.3); border: 1px solid var(--brass-dark); border-radius: 6px; padding: .4rem .8rem; margin: .6rem 0; } .nerd summary { cursor: pointer; color: var(--amber); }
+    .tryit { background: linear-gradient(180deg, var(--wood-light), var(--wood)); border: 2px solid var(--brass-dark); border-radius: 10px; padding: 12px 16px; margin: 1.1rem 0; }
+    .tryit h4 { margin-top: 0; } .widget { margin: .5rem 0; }
+    .oneline, .mattered { border-left: 4px solid var(--brass); background: rgba(201,162,77,.08); padding: .5rem .8rem; margin: .6rem 0; }
+    .chnav { display: flex; justify-content: space-between; gap: .6rem; margin: 1.2rem 0 2rem; flex-wrap: wrap; }
+    #ch-scene { margin: .5rem 0 .8rem; }
+    .glossary { max-width: 900px; margin-top: 1rem; } .glossary summary { cursor: pointer; color: var(--brass); } .glossary dt { color: var(--cream); font-weight: bold; margin-top: .5rem; } .glossary dd { margin: 0 0 0 1rem; color: var(--muted); }
+    /* widgets */
+    .w-row { display: flex; flex-wrap: wrap; gap: .6rem 1rem; align-items: center; margin: .5rem 0; }
+    .w-note { color: var(--cream); background: rgba(0,0,0,.3); border-radius: 6px; padding: .5rem .8rem; margin: .6rem 0; }
+    .w-out { margin: .6rem 0; }
+    .chain2 { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; } .chain2 .arr { color: var(--brass); }
+    .link { background: #170d06; border: 1px solid var(--brass-dark); color: var(--cream); border-radius: 6px; padding: .35rem .7rem; } .link.on { background: var(--brass); color: var(--ink); }
+    .linkinfo { min-height: 2.6em; margin-top: .6rem; }
+    .bars2 { display: flex; align-items: flex-end; gap: 3px; height: 130px; padding: 6px 4px 0; background: #130d07; border: 1px solid var(--brass-dark); border-radius: 6px; }
+    .bar2 { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; font: .65rem "Courier New", monospace; color: var(--muted); }
+    .bar2 .b { width: 100%; min-height: 1px; background: var(--brass); border-radius: 2px 2px 0 0; } .bar2 .b[data-top] { background: #d9534f; }
+    .w-split { display: grid; grid-template-columns: minmax(240px, 360px) 1fr; gap: 16px; align-items: start; }
+    @media (max-width: 640px) { .w-split { grid-template-columns: 1fr; } }
+    .rotorpic { width: 100%; max-width: 360px; background: #130d07; border: 1px solid var(--brass-dark); border-radius: 8px; }
+    .rotorpic text { font: 700 13px "Courier New", monospace; fill: var(--cream); cursor: default; } .rotorpic .sl { cursor: pointer; } .rotorpic .sel { fill: var(--amber); } .rotorpic .cap { fill: var(--muted); font: 11px Georgia, serif; }
+    .big { font-size: 1.8rem; color: var(--amber); font-family: "Courier New", monospace; margin: .2rem 0; }
+    .big2 { font-size: 1.15rem; } .big2 strong { color: var(--amber); font-size: 1.4rem; }
+    .ticklog { margin: .3rem 0; padding-left: 1.2rem; color: var(--muted); font-size: .9rem; }
+    .pairs2 { font-family: "Courier New", monospace; letter-spacing: .06em; }
+    .card2 { background: #f3ead2; color: var(--ink); border: 2px solid #7d5f26; border-radius: 6px; padding: .6rem 1rem; max-width: 380px; transform: rotate(-1deg); box-shadow: 3px 3px 0 rgba(0,0,0,.4); } .card2 ol { margin: .3rem 0 0; padding-left: 1.2rem; }
+    .chg { color: var(--amber); text-decoration: underline; }
+    #w1-text { min-height: 90px; }
+    code { background: #130d07; border: 1px solid var(--brass-dark); border-radius: 4px; padding: 0 .3rem; }
+    .about { max-width: 820px; } .about h3 { color: var(--brass); margin: 1.4rem 0 .3rem; letter-spacing: .06em; } .about li { margin: .35rem 0; } .about p { margin: .4rem 0; }
+    /* Code Library */
+    .pagetitle { color: var(--brass); letter-spacing: .08em; font-size: 1.7rem; margin: .5rem 0 .3rem; }
+    .lead { color: var(--muted); max-width: 70ch; margin: 0 0 1.2rem; }
+    #lib-list { display: grid; gap: 14px; }
+    .libcard { background: linear-gradient(180deg, var(--wood-light), var(--wood)); border: 2px solid var(--brass-dark); border-radius: 10px; padding: 14px 16px; }
+    .libcard header { display: flex; flex-wrap: wrap; gap: .4rem .8rem; align-items: baseline; justify-content: space-between; }
+    .libcard h3 { color: var(--cream); font-size: 1.25rem; margin: 0; }
+    .kind { font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; border: 1px solid var(--brass-dark); border-radius: 10px; padding: 0 .6rem; color: var(--brass); }
+    .kind-challenge { color: var(--amber); border-color: var(--amber); } .kind-test-vector { color: #9ad7c8; border-color: #9ad7c8; }
+    .libcard p { margin: .5rem 0; max-width: 75ch; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: .6rem 0; }
+    .chipset { font: .82rem "Courier New", monospace; background: #130d07; border: 1px solid var(--brass-dark); border-radius: 5px; padding: .1rem .5rem; color: var(--cream); }
+    .lib-label { font-size: .75rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-top: .4rem; }
+    .lib-cipher, .lib-plain { font: 700 1.15rem "Courier New", monospace; letter-spacing: .12em; word-break: break-word; background: #130d07; border: 2px dashed var(--brass-dark); border-radius: 5px; padding: .4rem .7rem; margin-top: .2rem; }
+    .lib-cipher { color: var(--amber); } .lib-plain { color: #9ad7c8; }
+    .lib-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin: .7rem 0; }
+    .lib-check { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; font-size: .9rem; color: var(--muted); margin-top: .5rem; }
+    .lib-check input { flex: 1 1 260px; letter-spacing: .1em; text-transform: uppercase; }
+    .lib-result { min-height: 1.4em; margin-top: .3rem; color: var(--muted); } .lib-result.good { color: #9ad7c8; font-weight: bold; }
+    @media (max-width: 640px) {
+      .stage { aspect-ratio: 4 / 3; }
+      .stage-ui .btn { padding: .15rem .45rem; font-size: .75rem; }
+    }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="brand">Enigma Unlocked</div>
+    <nav id="nav" aria-label="Sections">
+      <button data-tab="story">Story</button>
+      <button data-tab="learn">Learn</button>
+      <button data-tab="machine" aria-current="page">Machine</button>
+      <button data-tab="library">Code Library</button>
+      <button data-tab="about">About</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="tab-story" hidden>
+      <h2 class="pagetitle">The Story</h2>
+      <p class="lead">A short sketched tale about a secret message and the person trying to read it. Press Play and sit back, or click Next to go at your own pace.</p>
+      <div id="story-player"></div>
+    </section>
+    <section id="tab-learn" hidden>
+      <h2 class="pagetitle">Learn how Enigma works</h2>
+      <p class="lead">Seven short chapters, one idea each. Every chapter starts with a sketch scene with Anna and Tom, then lets you try the idea yourself. No maths needed beyond counting.</p>
+      <div id="learn-nav" class="learnnav" role="group" aria-label="Chapters"></div>
+      <div id="learn-body"></div>
+      <details class="glossary"><summary>Glossary: plain meanings</summary><dl id="glossary"></dl></details>
+    </section>
+    <section id="tab-library" hidden>
+      <h2 class="pagetitle">Code Library</h2>
+      <p class="lead">Real messages you can decode with the machine. Each card gives the exact settings and the scrambled text. Press <b>Decode it in the machine</b> and watch the answer appear, or work out the answer and check it here. Every answer in this library is tested against the machine, so none of them can be wrong.</p>
+      <div id="lib-list"></div>
+    </section>
+    <section id="tab-about" hidden class="about">
+      <h2 class="pagetitle">About this project</h2>
+      <p class="lead">Enigma Unlocked is a free, educational website that shows how the Enigma cipher machine works, then lets you play with a working one.</p>
+      <h3>How to use it</h3>
+      <ul>
+        <li><b>Story:</b> a short sketched tale about a secret message and the person trying to read it.</li>
+        <li><b>Learn:</b> seven short chapters, each with a scene and something to try.</li>
+        <li><b>Machine:</b> a 3D view of the whole machine that plays your message letter by letter, plus a simple view with the classic keyboard and lamps.</li>
+        <li><b>Code Library:</b> real messages to decode, with exact settings and answers that are tested against the machine.</li>
+      </ul>
+      <h3>What is and is not simulated</h3>
+      <p>The machine here is the three-rotor Army model (often called Enigma I): rotors I to V, mirror plates A, B and C, a ten-cable plugboard, ring settings and the middle-rotor double step. It reproduces the standard published test result (rotors I, II, III with every dial on A turns AAAAA into BDZGO). The rotor and mirror tables are published historical facts; the project checks that each table is a valid permutation or pairing, but only the I, II, III with mirror B setup is checked against a known historical result. Other models (the naval four-rotor machines, for example) are not included.</p>
+      <h3>Please note</h3>
+      <ul>
+        <li>This is a teaching toy. It is <b>not</b> a security tool. Enigma was broken during the Second World War, and you should never use it to protect anything real.</li>
+        <li>Anna and Tom are invented characters, and all drawings and text were created for this project. The project is not affiliated with, or endorsed by, any museum, film, company or organisation.</li>
+        <li>The site works offline and does not collect any data. Nothing you type leaves your browser.</li>
+      </ul>
+      <h3>Credits and licences</h3>
+      <ul>
+        <li><b>three.js</b> (version r159), copyright the three.js authors, MIT licence, used for the 3D view. The licence text is included in <code>vendor/LICENSE-three.txt</code>.</li>
+        <li>Everything else (code, text, drawings, 3D models and textures) was written or generated for this project and is released under the MIT licence (see the LICENSE file).</li>
+        <li>The historical facts come from the public record of the machine's design and use. Good places to read more: the Crypto Museum website's pages on Enigma, and the museum at Bletchley Park.</li>
+      </ul>
+      <h3>Run it yourself</h3>
+      <p>Download the project and open <code>index.html</code> in any modern browser. To check the machine, open <code>tests.html</code>: every test should say PASS.</p>
+    </section>
+
+    <section id="tab-machine">
+      <div class="viewbar">
+        <span class="seg" role="group" aria-label="Machine view">
+          <button id="vb-inside" aria-pressed="true">Inside view <small>(3D)</small></button><button id="vb-simple" aria-pressed="false">Simple view</button>
+        </span>
+        <span class="hint" style="margin:0">Both are the same machine: your settings and message carry over.</span>
+      </div>
+
+      <div id="view-inside">
+        <div class="machine">
+          <div class="modebar">
+            <span class="seg" role="group" aria-label="Mode">
+              <button data-mode="beginner" aria-pressed="true">Beginner</button><button data-mode="full" aria-pressed="false">Full machine</button>
+            </span>
+            <button class="btn load-test" title="Rotors I-II-III, all A, no plugs">Load the standard test</button>
+          </div>
+
+          <div class="panel">
+            <h3>1. Set up the machine</h3>
+            <p class="hint">Choose the three rotors and the letter each dial starts on. Whoever reads your message needs exactly the same setup.</p>
+            <div class="rotor-settings" id="in-rotor-settings"></div>
+            <div class="setup-row">
+              <label class="full-only">Mirror (reflector) <select class="reflector-select"><option>A</option><option selected>B</option><option>C</option></select></label>
+              <label>Cables <input id="in-cables" type="text" placeholder="e.g. AM FI NV (optional)" maxlength="40" spellcheck="false" autocomplete="off"></label>
+              <span class="hint" id="in-cables-msg" style="margin:0">Pairs of letters swapped by the plugboard. You can also click the sockets on the 3D plugboard.</span>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3>2. Type something</h3>
+            <div class="msgbar">
+              <input id="in-message" type="text" placeholder="Type your name, for example SHANTANU" maxlength="40" spellcheck="false" autocomplete="off" aria-label="Message to encrypt">
+              <button class="btn big" id="in-play">▶ Encrypt it</button>
+            </div>
+            <div class="tools">
+              <button class="btn" id="in-pause" disabled>⏸ Pause</button>
+              <button class="btn" id="in-step" aria-pressed="false" title="Advance one stage at a time">Step by step</button>
+              <button class="btn" id="in-next" disabled>Next stage ▸</button>
+              <button class="btn" id="in-restart">↺ Restart</button>
+              <button class="btn" id="in-back" title="Type the scrambled text back in to decrypt it">Send the output back in</button>
+              <label>Speed <select id="speed"><option value="2">Slow</option><option value="1" selected>Normal</option><option value="0.4">Fast</option><option value="0.03">Instant</option></select></label>
+            </div>
+            <div class="tape2" id="in-tape" aria-live="polite"></div>
+          </div>
+
+          <div class="panel">
+            <h3>3. Watch it work</h3>
+            <div class="windows" id="in-wins" aria-label="Rotor windows"></div>
+            <div class="stage" id="stage">
+              <canvas id="gl" aria-label="3D view of the whole Enigma machine"></canvas>
+              <div class="stage-ui">
+                <button class="btn" data-cam="whole">Whole machine</button>
+                <button class="btn" data-cam="letters">Side</button>
+                <button class="btn" data-cam="face">Face-on</button>
+                <button class="btn" data-cam="top">Top-down</button>
+                <button class="btn" id="xray" aria-pressed="true">X-ray wires</button>
+                <button class="btn" id="labels-btn" aria-pressed="true">Labels</button>
+              </div>
+            </div>
+            <div class="caption" id="in-caption">Type a name above and press Encrypt it, or just press a letter key.</div>
+            <p class="hint" style="margin:.5rem 0 0">Drag to turn the view, scroll or pinch to zoom. Amber = signal going in, blue = signal coming back.</p>
+          </div>
+
+          <div class="panel">
+            <h3>Or press the keys yourself</h3>
+            <div class="rows" id="in-keys" aria-label="Keyboard"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="view-simple" hidden>
+      <div class="machine">
+        <div class="modebar">
+          <span class="seg" role="group" aria-label="Mode">
+            <button data-mode="beginner" aria-pressed="true">Beginner</button><button data-mode="full" aria-pressed="false">Full machine</button>
+          </span>
+          <button class="btn load-test" title="Rotors I-II-III, all A, no plugs">Load the standard test</button>
+          <span class="hint" style="margin:0">Type on your keyboard, click the keys, or paste a message below.</span>
+        </div>
+
+        <div class="panel">
+          <h3>1. Set up the machine</h3>
+          <p class="hint">Pick which three rotors to use and where each starts. Your friend needs the same settings to read your message.</p>
+          <div class="rotor-settings" id="rotor-settings"></div>
+          <label class="full-only" style="gap:8px;margin-top:8px;align-items:center">
+            Mirror (reflector): <select class="reflector-select"><option>A</option><option selected>B</option><option>C</option></select>
+          </label>
+        </div>
+
+        <div class="panel">
+          <h3>2. Rotor windows</h3>
+          <div class="windows" id="windows"></div>
+          <p class="hint" style="text-align:center;margin-top:.5rem">They tick forward before every letter. Watch the right one.</p>
+        </div>
+
+        <div class="panel">
+          <h3>3. Lamps and keys</h3>
+          <div class="rows" id="lamps" aria-label="Lamps"></div>
+          <div style="height:14px"></div>
+          <div class="rows" id="keys" aria-label="Keyboard"></div>
+          <div class="sr" id="live" aria-live="polite"></div>
+        </div>
+
+        <div class="panel">
+          <h3>4. Plugboard (optional)</h3>
+          <p class="hint">Click one letter, then another, to connect them with a cable. Click a connected letter to remove its cable. Up to 10 cables.</p>
+          <div class="rows" id="plugs" aria-label="Plugboard"></div>
+          <div class="pairs" id="pairs"></div>
+          <div class="counter">Possible settings with your cables: <strong id="keycount"></strong>
+            <div class="hint" style="margin:0" id="keynote"></div></div>
+        </div>
+
+        <div class="panel">
+          <h3>5. Your message</h3>
+          <div class="grid2">
+            <div><label for="input"><b>Type or paste here</b></label>
+              <textarea id="input" spellcheck="false" placeholder="Type a message... only the letters A to Z are used"></textarea></div>
+            <div><b>What comes out</b>
+              <div class="tape" id="output" aria-live="off"></div></div>
+          </div>
+          <div class="tools">
+            <label><input type="checkbox" id="group5"> Groups of five</label>
+            <label><input type="checkbox" id="showpath" checked> Show the path of the last letter</label>
+            <button class="btn" id="copy">Copy output</button>
+            <button class="btn" id="clear">Clear message</button>
+          </div>
+          <p class="hint" style="margin-top:.6rem">To decrypt: keep the same settings, clear the message, paste the scrambled text. The original comes back.</p>
+        </div>
+
+        <div class="panel" id="path-panel">
+          <h3>The path of the last letter</h3>
+          <div class="chain" id="chain"></div>
+          <div class="caption" id="caption">Press a key to see its journey through the machine.</div>
+        </div>
+      </div>
+      </div><!-- /view-simple -->
+    </section>
+  </main>
+
+  <script src="vendor/three.min.js"></script>
+  <script src="enigma.js"></script>
+  <script src="store.js"></script>
+  <script src="ui.js"></script>
+  <script src="inside3d.js"></script>
+  <script src="library-data.js"></script>
+  <script src="library-ui.js"></script>
+  <script src="characters.js"></script>
+  <script src="player.js"></script>
+  <script src="scenes.js"></script>
+  <script src="lessons.js"></script>
+  <script>
+    Player.mount(document.getElementById('story-player'), SCENES.story);
+    Lessons.init();
+    EnigmaUI.start();
+  </script>
+</body>
+</html>

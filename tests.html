@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Enigma tests</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 760px; margin: 2rem auto; padding: 0 1rem; }
+    li { margin: .4rem 0; }
+    .pass { color: #1a7f37; } .fail { color: #cf222e; font-weight: bold; }
+    #summary { font-size: 1.2rem; margin: 1rem 0; }
+  </style>
+</head>
+<body>
+  <h1>Enigma core tests</h1>
+  <div id="summary"></div>
+  <ul id="results"></ul>
+  <script src="enigma.js"></script>
+  <script src="library-data.js"></script>
+  <script src="tests.js"></script>
+  <script>
+    const results = runAllTests();
+    const passed = results.filter((r) => r.pass).length;
+    document.getElementById("summary").textContent =
+      (passed === results.length ? "ALL PASS: " : "FAILURES: ") + passed + " of " + results.length + " tests passed";
+    document.getElementById("results").innerHTML = results
+      .map((r) => `<li class="${r.pass ? "pass" : "fail"}">${r.pass ? "PASS" : "FAIL"} - ${r.name}</li>`)
+      .join("");
+  </script>
+</body>
+</html>

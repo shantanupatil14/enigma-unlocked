@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Enigma Unlocked reel page</title>
+<!-- The page the video is filmed from: 1080 x 1920. It reuses the website's own cipher, 3D machine and sketch art.
+     IMPORTANT: no CSS transitions or animations here. The video is rendered on a fake clock that only JavaScript
+     timers follow, so every fade and move is done in reel.js. -->
+<style>
+  :root { --brass: #c9a24d; --brass-dark: #7d5f26; --cream: #efe6cf; --ink: #2a1d12; --amber: #ffb830; --text: #f2e8d0; --muted: #bfae8a; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #000; }
+  #frame { position: relative; width: 1080px; height: 1920px; overflow: hidden; color: var(--text); font-family: Georgia, "Times New Roman", serif;
+           background: radial-gradient(ellipse at 50% 30%, #2b190d 0%, #120a05 70%); }
+  #top { position: absolute; left: 54px; top: 46px; right: 54px; }
+  #brand { font-size: 38px; letter-spacing: .22em; color: var(--brass); text-transform: uppercase; }
+  #bar { margin-top: 20px; height: 8px; background: rgba(201,162,77,.2); border-radius: 4px; }
+  #barfill { height: 100%; width: 0; background: var(--brass); border-radius: 4px; }
+
+  #stage { position: absolute; left: 0; top: 150px; width: 1080px; height: 900px; overflow: hidden; background: #0c0704; }
+  .layer { position: absolute; inset: 0; opacity: 0; }
+  #stage canvas { width: 100%; height: 100%; display: block; }
+  #scene svg { width: 100%; height: 100%; display: block; }
+  #scenelabel { position: absolute; left: 30px; top: 28px; font-size: 40px; letter-spacing: .08em; color: var(--ink); background: rgba(255,250,240,.92); border: 4px solid var(--ink); border-radius: 12px; padding: 6px 22px; opacity: 0; }
+  #dim { position: absolute; inset: 0; background: rgba(10,6,3,.55); opacity: 0; }
+
+  #hook { background: #080504; display: grid; place-content: center; text-align: center; }
+  #hookletters { font: 700 150px "Courier New", monospace; letter-spacing: .12em; color: var(--amber); line-height: 1.15; text-shadow: 0 0 40px rgba(255,184,48,.45); }
+  #hookq { margin-top: 30px; font-size: 58px; color: var(--muted); font-style: italic; }
+
+  #endcard { background: radial-gradient(ellipse at 50% 40%, #3a2412 0%, #0f0805 75%); display: grid; place-content: center; text-align: center; padding: 60px; }
+  #endcard h1 { margin: 0; font-size: 118px; font-weight: normal; letter-spacing: .1em; color: var(--brass); text-transform: uppercase; line-height: 1.05; }
+  #endcard p { font-size: 46px; color: var(--cream); margin: 28px 0 0; }
+  #endcard .cta { display: inline-block; margin-top: 56px; background: var(--brass); color: var(--ink); font-size: 56px; font-weight: bold; border-radius: 16px; padding: 20px 50px; }
+  #endcard small { display: block; margin-top: 60px; font-size: 28px; color: var(--muted); }
+
+  #cards { position: absolute; left: 36px; right: 36px; bottom: 34px; display: flex; flex-direction: column; gap: 14px; }
+  .card { background: rgba(244,236,212,.96); color: var(--ink); border: 5px solid var(--ink); border-radius: 18px; padding: 14px 28px; opacity: 0; }
+  .card b { display: block; font-size: 54px; line-height: 1.1; }
+  .card span { display: block; font-size: 34px; line-height: 1.25; margin-top: 4px; }
+  .card.film { text-align: center; padding: 30px 28px; }
+  .card.film b { font-size: 62px; } .card.film span { font-size: 38px; }
+
+  #caption { position: absolute; left: 60px; right: 60px; top: 1075px; height: 320px; display: grid; place-items: center; text-align: center;
+             font-size: 62px; line-height: 1.22; font-weight: bold; color: #fff; text-shadow: 0 0 10px #000, 0 3px 6px #000, 3px 3px 0 #000, -3px -3px 0 #000; }
+  #panel { position: absolute; left: 54px; right: 54px; top: 1410px; height: 300px; }
+  #dials { display: flex; justify-content: center; }
+  #in-wins { display: flex; gap: 40px; justify-content: center; }
+  .win-wrap { text-align: center; font-size: 26px; color: var(--muted); }
+  .win { width: 104px; height: 132px; margin: 0 auto 6px; display: grid; place-items: center; background: linear-gradient(#050302, #1d1710 45%, #050302); border: 6px solid var(--brass-dark); border-radius: 12px; color: #f3e3b0; font: 700 74px Georgia, serif; }
+  #in-tape { margin-top: 18px; display: grid; gap: 8px; font: 700 40px "Courier New", monospace; }
+  #in-tape .tr { display: flex; flex-wrap: nowrap; gap: 5px; align-items: center; justify-content: center; }
+  #in-tape .lab { font: 24px Georgia, serif; color: var(--muted); width: 110px; }
+  #in-tape .ch { width: 48px; height: 56px; display: grid; place-items: center; border-radius: 6px; background: #130d07; color: var(--cream); border: 2px solid var(--brass-dark); }
+  #in-tape .ch.now { border-color: var(--amber); color: var(--amber); }
+  #in-tape .ch.todo { opacity: .35; } #in-tape .out { color: var(--amber); }
+  #footer { position: absolute; left: 54px; right: 54px; top: 1740px; text-align: center; font-size: 26px; color: var(--muted); }
+
+  .tag { position: absolute; left: 0; top: 0; font-size: 30px; color: var(--cream); background: rgba(10,6,3,.82); border: 3px solid var(--brass-dark); border-radius: 18px; padding: 2px 16px; white-space: nowrap; }
+  .tag.off { display: none; }
+
+  /* characters (same still, expression-led figures as the website) */
+  .char.hidden { display: none; }
+  .look-r .pupil { transform: translateX(2px); } .look-l .pupil { transform: translateX(-2px); }
+  .char .v { display: none; }
+  .char .e-open, .char .b-flat, .char .m-smile { display: inline; }
+  .mood-happy .e-open, .mood-happy .b-flat, .mood-happy .m-smile, .mood-surprised .e-open, .mood-surprised .b-flat, .mood-surprised .m-smile,
+  .mood-worried .b-flat, .mood-worried .m-smile, .mood-thinking .b-flat, .mood-thinking .m-smile, .mood-curious .b-flat, .mood-curious .m-smile,
+  .mood-proud .e-open, .mood-proud .m-smile { display: none; }
+  .mood-happy .e-happy, .mood-happy .b-up, .mood-happy .m-grin { display: inline; }
+  .mood-surprised .e-wide, .mood-surprised .b-up, .mood-surprised .m-o { display: inline; }
+  .mood-worried .b-worried, .mood-worried .m-frown { display: inline; }
+  .mood-thinking .b-curious, .mood-thinking .m-flat { display: inline; }
+  .mood-curious .b-curious, .mood-curious .m-smirk { display: inline; }
+  .mood-proud .e-squint, .mood-proud .m-smirk { display: inline; }
+  .fx, .signal { opacity: 0; }
+  svg.on-bars .fx-bars, svg.on-swap .fx-swap, svg.on-question .fx-question { opacity: 1; }
+  svg.on-signal .signal { opacity: 1; }
+  svg.on-lamp .lamp-main { fill: #ffb830; }
+  #stage.no3d .tag { display: none !important; }
+  #hidden-controls { display: none; }
+</style>
+</head>
+<body>
+<div id="frame">
+  <div id="top"><div id="brand">Enigma Unlocked</div><div id="bar"><div id="barfill"></div></div></div>
+
+  <div id="stage">
+    <canvas id="gl"></canvas>                                  <!-- the 3D machine (drawn by inside3d.js) -->
+    <div id="scene" class="layer"></div>
+    <div id="dim"></div>
+    <div id="scenelabel"></div>
+    <div id="hook" class="layer"><div><div id="hookletters"></div><div id="hookq">What does it say?</div></div></div>
+    <div id="endcard" class="layer"><div><h1>Enigma<br>Unlocked</h1><p>Learn how Enigma works.<br>Play with a 3D machine.</p><div class="cta">Link in the comments</div>
+      <small>Narration is a synthetic voice. Anna and Tom are fictional characters.</small></div></div>
+    <div id="cards"></div>
+  </div>
+
+  <div id="caption"></div>
+  <div id="panel"><div id="dials"><div id="in-wins"></div></div><div id="in-tape"></div></div>
+  <div id="footer"></div>
+
+  <!-- elements inside3d.js looks for, hidden because the director drives the machine -->
+  <div id="hidden-controls">
+    <button id="xray" aria-pressed="true"></button><button id="labels-btn" aria-pressed="true"></button>
+    <select id="speed"><option value="1" selected>1</option></select>
+    <input id="in-message"><button id="in-play"></button><button id="in-pause"></button><button id="in-step"></button><button id="in-next" disabled></button>
+    <button id="in-restart"></button><button id="in-back"></button><input id="in-cables"><span id="in-cables-msg"></span>
+    <div id="in-keys"></div><div id="in-caption"></div>
+  </div>
+</div>
+
+<script src="../../vendor/three.min.js"></script>
+<script src="../../enigma.js"></script>
+<script src="../../store.js"></script>
+<script>
+  // constants the 3D module normally gets from the website's ui.js
+  const KEY_ROWS = ["QWERTZUIOP", "ASDFGHJKL", "PYXCVBNM"];
+  const SIDES = ["Left", "Middle", "Right"];
+  const PLUG_COLOURS = ["#e57373", "#64b5f6", "#81c784", "#ffd54f", "#ba68c8", "#4dd0e1", "#ff8a65", "#a1887f", "#f06292", "#aed581"];
+</script>
+<script src="../../inside3d.js"></script>
+<script src="../../characters.js"></script>
+<script src="reel.js"></script>
+</body>
+</html>

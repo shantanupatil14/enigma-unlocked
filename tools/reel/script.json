@@ -1,0 +1,138 @@
+{
+  "phrase": "ENIGMAISAWESOME",
+  "display": "ENIGMA IS AWESOME",
+  "settings": { "rotors": ["I", "II", "III"], "reflector": "B", "rings": "AAA", "positions": "AAA", "plugboard": "AM FI NV" },
+  "voice": "en-GB-RyanNeural",
+  "rate": "+5%",
+  "gap": 0.35,
+  "lead": 0.45,
+  "_help": "Each segment has narration text and, optionally, shots (what is on screen), cards (paper cards) and ops (machine actions). 'at' is the first word to anchor on (searched in order), 0 for the segment start, or '@end-1.8' for 1.8 s before the end of the narration. {out} is replaced by the machine's real output for the first letter.",
+  "cuts": {
+    "story": [
+      { "id": "hook", "text": "This looks like nonsense. But it hides a message.",
+        "shots": [ { "at": 0, "type": "hook" } ] },
+
+      { "id": "war", "text": "World War Two. Armies sent their orders by radio, and anyone with a radio could listen in. So Germany scrambled its messages with a machine called Enigma.",
+        "shots": [
+          { "at": 0, "type": "scene", "room": "street", "vb": [130, 0, 540, 450], "label": "1939 - 1945",
+            "cast": { "anna": { "show": true, "x": 90, "mood": "worried" }, "tom": { "show": true, "x": 480, "look": "l", "mood": "curious" } } },
+          { "at": "armies", "type": "scene", "room": "radio-room", "vb": [95, 0, 540, 450], "label": "1939 - 1945", "fx": ["signal"],
+            "cast": { "anna": { "show": true, "x": 250, "mood": "worried" }, "tom": { "show": false } } },
+          { "at": "so", "type": "scene", "room": "radio-room", "vb": [455, 130, 340, 283], "label": "The Enigma machine", "fx": ["lamp"],
+            "cast": { "anna": { "show": false }, "tom": { "show": false } } }
+        ] },
+
+      { "id": "inventor", "text": "It was invented by a German engineer, Arthur Scherbius, who patented it in nineteen eighteen. The German military adopted it in the late nineteen-twenties.",
+        "shots": [ { "at": 0, "type": "scene", "room": "radio-room", "vb": [455, 130, 340, 283], "fx": ["lamp"], "cast": { "anna": { "show": false }, "tom": { "show": false } } } ],
+        "cards": [
+          { "at": "patented", "title": "1918", "text": "Arthur Scherbius, a German engineer, patents the machine" },
+          { "at": "adopted", "title": "Late 1920s", "text": "The German military adopts it" },
+          { "at": "@end-1.6", "title": "1939 - 1945", "text": "Used throughout World War Two" }
+        ] },
+
+      { "id": "codebreakers", "text": "They believed it was unbreakable. But Polish mathematicians cracked early versions, and at Bletchley Park in Britain, Alan Turing and his colleagues built machines to beat it. Many historians believe that shortened the war by at least two years.",
+        "shots": [
+          { "at": 0, "type": "scene", "room": "listening-station", "vb": [60, 0, 540, 450], "cast": { "anna": { "show": false }, "tom": { "show": true, "x": 150, "mood": "worried" } } },
+          { "at": "alan", "type": "scene", "room": "listening-station", "vb": [60, 0, 540, 450], "cast": { "tom": { "show": true, "x": 150, "mood": "proud" } } }
+        ],
+        "cards": [
+          { "at": "polish", "title": "1932", "text": "Polish mathematicians break early versions" },
+          { "at": "bletchley", "title": "Bletchley Park, UK", "text": "Alan Turing's team builds machines to beat it" },
+          { "at": "many", "title": "Many historians say", "text": "The war was shortened by at least two years" }
+        ] },
+
+      { "id": "film", "text": "A twenty-fourteen film, The Imitation Game, dramatised that story.",
+        "shots": [ { "at": 0, "type": "scene", "room": "listening-station", "vb": [60, 0, 540, 450], "dim": true, "cast": { "anna": { "show": false }, "tom": { "show": true, "x": 150, "mood": "curious" } } } ],
+        "cards": [ { "at": 0, "title": "The Imitation Game (2014)", "text": "A dramatisation of the codebreaking story", "style": "film" } ] },
+
+      { "id": "bridge", "text": "So how does Enigma actually work? Let's open it up.",
+        "shots": [
+          { "at": 0, "type": "scene", "room": "radio-room", "vb": [455, 130, 340, 283], "fx": ["lamp"], "cast": { "anna": { "show": false }, "tom": { "show": false } } },
+          { "at": "open", "type": "machine3d", "cam": "wide" }
+        ] },
+
+      { "id": "machine", "pad": 1.6, "text": "Let's send: Enigma is awesome. First letter, E. The right wheel clicks forward one notch. The other two stay still. The signal crosses the plugboard, runs through three scrambling wheels, hits a mirror, and bounces back by a different path. A lamp lights: {out}. E became {out}.",
+        "shots": [ { "at": 0, "type": "machine3d", "cam": "wide" } ],
+        "ops": [
+          { "at": "send", "op": "input", "text": "E", "cam": "wide" },
+          { "at": "first", "op": "release", "n": 1, "cam": "plug" },
+          { "at": "right", "op": "release", "n": 1, "cam": "rotorR" },
+          { "at": "other", "op": "cam", "cam": "dials" },
+          { "at": "crosses", "op": "release", "n": 2, "cam": "plug" },
+          { "at": "three", "op": "release", "n": 6, "cam": "rotors" },
+          { "at": "mirror", "op": "release", "n": 1, "cam": "mirror" },
+          { "at": "bounces", "op": "release", "n": 8, "cam": "back" },
+          { "at": "lamp", "op": "release", "n": 1, "cam": "lamps" }
+        ] },
+
+      { "id": "montage", "text": "Every press moves the wheels, so each letter is scrambled differently.",
+        "shots": [ { "at": 0, "type": "machine3d" } ],
+        "ops": [ { "at": 0, "op": "montage", "timescale": 2.5, "cam": "wide2" } ] },
+
+      { "id": "decode", "text": "Same settings in, and the original comes back.",
+        "shots": [ { "at": 0, "type": "machine3d" } ],
+        "ops": [ { "at": 0, "op": "decode", "timescale": 2.5, "cam": "wide" } ] },
+
+      { "id": "outro", "text": "Try it yourself: Enigma Unlocked. Link in the comments.",
+        "shots": [ { "at": 0, "type": "endcard" } ] }
+    ],
+
+    "short": [
+      { "id": "hook", "text": "This looks like nonsense. But it hides a message.",
+        "shots": [ { "at": 0, "type": "hook" } ] },
+
+      { "id": "war", "text": "World War Two. Armies sent orders by radio, and anyone could listen in. So Germany scrambled its messages with a machine called Enigma, invented by Arthur Scherbius.",
+        "shots": [
+          { "at": 0, "type": "scene", "room": "street", "vb": [130, 0, 540, 450], "label": "1939 - 1945",
+            "cast": { "anna": { "show": true, "x": 90, "mood": "worried" }, "tom": { "show": true, "x": 480, "look": "l", "mood": "curious" } } },
+          { "at": "armies", "type": "scene", "room": "radio-room", "vb": [95, 0, 540, 450], "label": "1939 - 1945", "fx": ["signal"],
+            "cast": { "anna": { "show": true, "x": 250, "mood": "worried" }, "tom": { "show": false } } },
+          { "at": "so", "type": "scene", "room": "radio-room", "vb": [455, 130, 340, 283], "label": "The Enigma machine", "fx": ["lamp"],
+            "cast": { "anna": { "show": false }, "tom": { "show": false } } }
+        ],
+        "cards": [ { "at": "invented", "title": "1918", "text": "Patented by German engineer Arthur Scherbius" } ] },
+
+      { "id": "codebreakers", "text": "Polish mathematicians, then Alan Turing's team at Bletchley Park, learned to break it. Many historians say that shortened the war by at least two years.",
+        "shots": [ { "at": 0, "type": "scene", "room": "listening-station", "vb": [60, 0, 540, 450], "cast": { "anna": { "show": false }, "tom": { "show": true, "x": 150, "mood": "proud" } } } ],
+        "cards": [
+          { "at": "polish", "title": "1932", "text": "Polish mathematicians break early versions" },
+          { "at": "bletchley", "title": "Bletchley Park, UK", "text": "Alan Turing's team builds machines to beat it" },
+          { "at": "many", "title": "Many historians say", "text": "The war was shortened by at least two years" }
+        ] },
+
+      { "id": "film", "text": "A twenty-fourteen film, The Imitation Game, dramatised that story.",
+        "shots": [ { "at": 0, "type": "scene", "room": "listening-station", "vb": [60, 0, 540, 450], "dim": true, "cast": { "anna": { "show": false }, "tom": { "show": true, "x": 150, "mood": "curious" } } } ],
+        "cards": [ { "at": 0, "title": "The Imitation Game (2014)", "text": "A dramatisation of the codebreaking story", "style": "film" } ] },
+
+      { "id": "bridge", "text": "So how does it work? Let's open it up.",
+        "shots": [
+          { "at": 0, "type": "scene", "room": "radio-room", "vb": [455, 130, 340, 283], "fx": ["lamp"], "cast": { "anna": { "show": false }, "tom": { "show": false } } },
+          { "at": "open", "type": "machine3d", "cam": "wide" }
+        ] },
+
+      { "id": "machine", "pad": 1.6, "text": "Let's send: Enigma is awesome. First letter, E. The right wheel clicks forward one notch. The other two stay still. The signal crosses the plugboard, runs through three scrambling wheels, hits a mirror, and bounces back by a different path. A lamp lights: {out}. E became {out}.",
+        "shots": [ { "at": 0, "type": "machine3d", "cam": "wide" } ],
+        "ops": [
+          { "at": "send", "op": "input", "text": "E", "cam": "wide" },
+          { "at": "first", "op": "release", "n": 1, "cam": "plug" },
+          { "at": "right", "op": "release", "n": 1, "cam": "rotorR" },
+          { "at": "other", "op": "cam", "cam": "dials" },
+          { "at": "crosses", "op": "release", "n": 2, "cam": "plug" },
+          { "at": "three", "op": "release", "n": 6, "cam": "rotors" },
+          { "at": "mirror", "op": "release", "n": 1, "cam": "mirror" },
+          { "at": "bounces", "op": "release", "n": 8, "cam": "back" },
+          { "at": "lamp", "op": "release", "n": 1, "cam": "lamps" }
+        ] },
+
+      { "id": "finish", "text": "Every press moves the wheels, so each letter changes. Same settings in, and the original comes back.",
+        "shots": [ { "at": 0, "type": "machine3d" } ],
+        "ops": [
+          { "at": 0, "op": "montage", "timescale": 2.5, "cam": "wide2" },
+          { "at": "same", "op": "decode", "timescale": 2.5, "cam": "wide" }
+        ] },
+
+      { "id": "outro", "text": "Try it yourself: Enigma Unlocked. Link in the comments.",
+        "shots": [ { "at": 0, "type": "endcard" } ] }
+    ]
+  }
+}
